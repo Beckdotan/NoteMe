@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -53,13 +54,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mapFragment.getMapAsync(this);
 
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        /*
-        if (mLocationPermissionGranted) {
-            Log.i("mapActivity", "onCreate: permission granted");
-        } else {
-            requestLocationPermission();
-        }
-         */
+ 
     }
 
 
@@ -113,6 +108,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                 //if the request is cancelled the result is ampty.
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     mLocationPermissionGranted = true;
+                    Toast.makeText(this, "Thanks for the permission, PLEASE RESTART THE APP", Toast.LENGTH_LONG ).show();
                 }
             }
         }
@@ -136,9 +132,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
                             //set the cameras positions to the current location of device.
 
                             Log.i("On Complete", "in if");
+                            if (task == null){
+                                Log.i("On Complete", "task = null");
+                            }
+                            Log.i("On Complete", "task not null");
                             mLastKnownLocation = (Location) task.getResult();
-
-                            Log.i("My Location", mLastKnownLocation.toString());
+                            if (mLastKnownLocation == null){
+                                Log.i("On Complete", "last location = null");
+                            }
+                            Log.i("On Complete", "lastlocation not null");
+                            //Log.i("My Location", mLastKnownLocation.toString());
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
