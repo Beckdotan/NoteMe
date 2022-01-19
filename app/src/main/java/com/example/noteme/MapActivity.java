@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -40,6 +41,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     static Location mLastKnownLocation;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
+    private String isItSecondMarkerClick = "";
 
 
     @Override
@@ -84,14 +86,19 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                 mMap.setMyLocationEnabled(true);
             }
 
+
             updateLocationUI();
             getDeviceLocation();
 
+
             //hardcoded pointer for tests
-            LatLng sydney = new LatLng(-34, 151);
+            LatLng sydney = new LatLng(37.4244618058266, -122.08005726358829);
             mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
             mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-            mMap.setOnMapClickListener(this);
+            mMap.setOnMarkerClickListener(this);
+
+
+
 
         }
 
@@ -141,17 +148,25 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                         if (task.isSuccessful()) {
                             //set the cameras positions to the current location of device.
 
+                            //tests
                             Log.i("On Complete", "in if");
                             if (task == null){
                                 Log.i("On Complete", "task = null");
+                            }else {
+                                Log.i("On Complete", "task not null");
                             }
-                            Log.i("On Complete", "task not null");
+                            //-----------//
+
                             mLastKnownLocation = (Location) task.getResult();
+
+                           //Tests
                             if (mLastKnownLocation == null){
                                 Log.i("On Complete", "last location = null");
+                            }else {
+                                Log.i("On Complete", "lastlocation not null");
                             }
-                            Log.i("On Complete", "lastlocation not null");
-                            //Log.i("My Location", mLastKnownLocation.toString());
+                            //--------------//
+
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                     new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
 
@@ -205,6 +220,22 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        Log.i(marker.getTitle(), "clicked");
+        if (marker.getId().equals(isItSecondMarkerClick)){
+            Log.i("onMarkerClick", "equals ");
+            isItSecondMarkerClick = "";
+            Intent intent = new Intent(MapActivity.this, NoteActivity.class);
+            startActivity(intent);
+
+            Log.i("onMarkerClick marker", marker.getId());
+            Log.i("onMarkerClick saved", isItSecondMarkerClick);
+        }else{
+            Log.i("onMarkerClick", "Not equals ");
+            isItSecondMarkerClick = marker.getId();
+            Log.i("onMarkerClick marker", marker.getId());
+            Log.i("onMarkerClick saved", isItSecondMarkerClick);
+        }
+
         return false;
     }
 }
