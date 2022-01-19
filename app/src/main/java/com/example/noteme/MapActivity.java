@@ -36,7 +36,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     private FusedLocationProviderClient mfusedLocationProviderClient;
     private static final int DEFAULT_ZOOM = 15;
     private final LatLng mDeaultlocation = new LatLng(-34, 151);
-    private Location mLastKnownLocation;
+    static Location mLastKnownLocation;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -78,7 +78,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         }
 
-        
+
 
 
     //asking for location permission
