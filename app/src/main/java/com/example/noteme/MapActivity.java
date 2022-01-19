@@ -22,12 +22,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.noteme.databinding.ActivityMapBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-public class MapActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
 
     private GoogleMap mMap;
     private ActivityMapBinding binding;
@@ -55,6 +56,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        /*
+        calling to get all the pointer will be here
+        .
+        .
+        .
+        .
+        .
+        .
+         */
+
     }
 
 
@@ -75,6 +86,12 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
             updateLocationUI();
             getDeviceLocation();
+
+            //hardcoded pointer for tests
+            LatLng sydney = new LatLng(-34, 151);
+            mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+            mMap.setOnMapClickListener(this);
 
         }
 
@@ -181,7 +198,13 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         }
     }
 
+    public void fetchLocationByID ( Marker marker){
+
+    }
 
 
-
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return false;
+    }
 }
