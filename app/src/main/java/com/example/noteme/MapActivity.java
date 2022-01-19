@@ -54,7 +54,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
         mapFragment.getMapAsync(this);
 
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
- 
+
     }
 
 
@@ -77,16 +77,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
             getDeviceLocation();
 
         }
-    //check if location is permitted
-    private void isLocationPermissionGranted() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted = true;
-            return;
-        } else {
-            return;
-        }
-    }
+
+        
 
 
     //asking for location permission
@@ -99,6 +91,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
 
     }
 
+    //Getting the answer of the permission request
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -162,7 +155,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback 
     }
 
 
-
+    //Updates the location of the map to phone last known location location
     private void updateLocationUI() {
         Log.i("UPDATE MY LOCATION", "In ");
         if (mMap == null) {
