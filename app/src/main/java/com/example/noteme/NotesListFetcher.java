@@ -21,17 +21,17 @@ for now, there is no "distance" logic here.
 
  */
 
-public class MapPointersFetcher {
+public class NotesListFetcher {
 
     private RequestQueue _queue;
     private final static String REQUEST_URL = "http://10.0.2.2:8080/notes?";
 
-    public MapPointersFetcher(Context context) {
+    public NotesListFetcher(Context context) {
         _queue = Volley.newRequestQueue(context);
     }
 
 
-    public class MapPointersResponse {
+    public class NotesListResponse {
 
         public boolean isError;
         public String id;
@@ -42,7 +42,7 @@ public class MapPointersFetcher {
         public int numLikes;
 
 
-        public MapPointersResponse(boolean isError, String id, String head, String body, double lon, double lat, int numLikes) {
+        public NotesListResponse(boolean isError, String id, String head, String body, double lon, double lat, int numLikes) {
             this.isError = isError;
             this.id = id;
             this.head = head;
@@ -53,18 +53,18 @@ public class MapPointersFetcher {
         }
     }
 
-    public interface MapPointersResponseListener {
-        public void onResponse(MapPointersResponse response);
+    public interface NotesListResponseListener {
+        public void onResponse(NotesListResponse response);
 
     }
 
-    private MapPointersResponse createErrorResponse() {
+    private NotesListResponse createErrorResponse() {
         Log.e("In fetcher", "In Creat arror response");
-        return new MapPointersResponse(true, null, null, null, 0, 0, 0);
+        return new NotesListResponse(true, null, null, null, 0, 0, 0);
 
     }
 
-    public void dispatchRequest(final MapPointersResponseListener listener) {
+    public void dispatchRequest(final NotesListResponseListener listener) {
         Log.i("In fetcher", "In fetcher");
         //JSONObject response = new JSONObject();
         Location lastLocation = MapActivity.mLastKnownLocation;
@@ -72,11 +72,11 @@ public class MapPointersFetcher {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-//                        Log.i("In fetcher", "On Response");
+                        Log.i("In fetcher", "On Response");
                         try {
                             //Creating the response
                             Log.i("In fetcher", "In Try");
-                            MapPointersResponse res = new MapPointersResponse(false,
+                            NotesListResponse res = new NotesListResponse(false,
                                     response.getString("Id"),
                                     response.getString("Head"),
                                     response.getString("Body"),
@@ -108,3 +108,5 @@ public class MapPointersFetcher {
     }
 
 }
+
+

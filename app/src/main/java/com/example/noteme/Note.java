@@ -1,5 +1,7 @@
 package com.example.noteme;
 
+import org.json.JSONObject;
+
 public class Note {
 
     public boolean isError;
@@ -20,5 +22,15 @@ public class Note {
         this.lat = lat;
         this.numLikes = numLikes;
     }
+    //getting Json and return extract all notes from it.
+    public Note[] JsonToNote (JSONObject json){
+        Note[] noteList = new Note[0];
+        return noteList;
+    }
 
+    //getting Note and creating JSONObject.
+    public JSONObject NoteToJSON (Note note){
+        JSONObject json = new JSONObject();
+        return json;
+    }
 }

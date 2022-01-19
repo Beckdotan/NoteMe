@@ -20,8 +20,10 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                //change the second element todecide to which windows it goest to. (currently its on MapActivity).
                 Intent intent = new Intent(MainActivity.this, MapActivity.class);
                 startActivity(intent);
+                //the finish function making sure that if you press on the beck button of android you will not go back to the splash screen.
                 finish();
             }
         }, 3000);

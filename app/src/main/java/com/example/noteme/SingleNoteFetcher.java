@@ -17,14 +17,14 @@ import org.json.JSONObject;
 
 
 /*
-This class should be able to take only one Note from server thure its Id.
+This class should be able to take only one Note from server thure its Lon and Lat.
  */
 
 public class SingleNoteFetcher {
 
     private RequestQueue _queue;
     private final static String REQUEST_URL = "http://10.0.2.2:8080/notes/getnote?";
-    public String givenId;
+
 
     public SingleNoteFetcher(Context context) {
         _queue = Volley.newRequestQueue(context);
@@ -69,7 +69,7 @@ public class SingleNoteFetcher {
         //JSONObject response = new JSONObject();
         Location lastLocation = MapActivity.mLastKnownLocation;
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET,
-                REQUEST_URL+"?Id="+ givenId,
+                REQUEST_URL+"Lat="+ NoteActivity.givenLat + "&Lon=" + NoteActivity.givenLon,
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
