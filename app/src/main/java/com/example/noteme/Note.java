@@ -25,7 +25,16 @@ public class Note {
         this.lat = lat;
         this.numLikes = numLikes;
     }
-
+    //constructor that makes the id automatically.
+    public Note(boolean isError, String head, String body, double lon, double lat, int numLikes) {
+        this.isError = isError;
+        this.id = ""+((int)((lat*lon)*(lat*lon)));
+        this.head = head;
+        this.body = body;
+        this.lon = lon;
+        this.lat = lat;
+        this.numLikes = numLikes;
+    }
     //important for reading from the database.
     public  Note() {
     }
@@ -52,7 +61,6 @@ public class Note {
     public String getId() {
         return id;
     }
-
     public String getHead() {
         return head;
     }
