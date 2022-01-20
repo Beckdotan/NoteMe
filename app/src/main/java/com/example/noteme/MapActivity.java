@@ -14,6 +14,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -34,6 +36,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
     private GoogleMap mMap;
     private ActivityMapBinding binding;
+    Button addNoteButton;
 
     private static final int LOCATION_PERMISSION_CODE = 101;
     private FusedLocationProviderClient mfusedLocationProviderClient;
@@ -60,6 +63,16 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        addNoteButton = (Button) findViewById(R.id.addnotebutton);
+        addNoteButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MapActivity.this, NoteActivity.class);
+                startActivity(intent);
+
+            }
+        });
         /*
         calling to get all the pointer will be here
         should add it to the documentation
