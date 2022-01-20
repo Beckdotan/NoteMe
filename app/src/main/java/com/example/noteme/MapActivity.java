@@ -68,7 +68,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             @SuppressLint("LongLogTag")
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MapActivity.this, NoteActivity.class);
+                Intent intent = new Intent(MapActivity.this, AddNoteActivity.class);
                 startActivity(intent);
 
             }
