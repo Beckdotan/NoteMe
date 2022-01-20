@@ -44,6 +44,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private boolean mLocationPermissionGranted;
     private String isItSecondMarkerClick = "";
 
+        // test
     //starting the map window.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,30 +73,30 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     }
 
 
-        // The main logic of the map. executed just after the map loaded
-        @Override
-        public void onMapReady(GoogleMap googleMap) {
-            mMap = googleMap;
+    // The main logic of the map. executed just after the map loaded
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
 
 
-            // Starting the map to fixed location and zoom that will be changed in the  UpdateLocationUI function soon, but its needed for the right loading.
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDeaultlocation, DEFAULT_ZOOM));
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    == PackageManager.PERMISSION_GRANTED) {
-                mLocationPermissionGranted = true;
-                mMap.setMyLocationEnabled(true);
-            }
+        // Starting the map to fixed location and zoom that will be changed in the  UpdateLocationUI function soon, but its needed for the right loading.
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDeaultlocation, DEFAULT_ZOOM));
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mLocationPermissionGranted = true;
+            mMap.setMyLocationEnabled(true);
+        }
 
-            updateLocationUI(); //updating the screen location and zoom to the  mLastKnownLocation. - important that it will come before getting the device location in the first time becouse i askes for permissions as well.
-            getDeviceLocation(); //getting Device Current location if all permissions were given and saves it in  mLastKnownLocation, otherwise asking for permissions.
+        updateLocationUI(); //updating the screen location and zoom to the  mLastKnownLocation. - important that it will come before getting the device location in the first time becouse i askes for permissions as well.
+        getDeviceLocation(); //getting Device Current location if all permissions were given and saves it in  mLastKnownLocation, otherwise asking for permissions.
 
 
 
-            //hardcoded pointer for tests
-            LatLng sydney = new LatLng(37.4244618058266, -122.08005726358829);
-            mMap.addMarker(new MarkerOptions().position(sydney).title("Dotan Beck"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-            mMap.setOnMarkerClickListener(this);
+        //hardcoded pointer for tests
+        LatLng sydney = new LatLng(37.4244618058266, -122.08005726358829);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Dotan Beck"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.setOnMarkerClickListener(this);
 
             /*
             getting lists of Notes and making marker from each one of them and present the markers.
@@ -108,7 +109,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             .
              */
 
-        }
+    }
 
 
 
@@ -118,7 +119,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) ==PackageManager.PERMISSION_GRANTED){
             mLocationPermissionGranted = true;
         }else{
-           ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
 
     }
@@ -168,7 +169,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
                             mLastKnownLocation = (Location) task.getResult();
 
-                           //tests
+                            //tests
                             if (mLastKnownLocation == null){
                                 Log.i("On Complete", "last location = null");
                             }else {
