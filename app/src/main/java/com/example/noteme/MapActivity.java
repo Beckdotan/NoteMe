@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -30,6 +31,17 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.noteme.databinding.ActivityMapBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -46,8 +58,10 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     private String isItSecondMarkerClick = "";
+    public int defUserRadius = 50;
 
-        // test
+
+    // test
     //starting the map window.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,15 +78,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
         addNoteButton = (Button) findViewById(R.id.addnotebutton);
-        addNoteButton.setOnClickListener(new View.OnClickListener() {
-            @SuppressLint("LongLogTag")
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MapActivity.this, AddNoteActivity.class);
-                startActivity(intent);
 
-            }
-        });
         /*
         calling to get all the pointer will be here
         should add it to the documentation
@@ -104,23 +110,66 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         getDeviceLocation(); //getting Device Current location if all permissions were given and saves it in  mLastKnownLocation, otherwise asking for permissions.
 
 
+        //Click listener for Add note
+        addNoteButton.setOnClickListener(new View.OnClickListener() {
+            @SuppressLint("LongLogTag")
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MapActivity.this, AddNoteActivity.class);
+                startActivity(intent);
 
-        //hardcoded pointer for tests
+            }
+        });
+
+        //hardcoded marker for tests
+        /*
         LatLng sydney = new LatLng(37.4244618058266, -122.08005726358829);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Dotan Beck"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         mMap.setOnMarkerClickListener(this);
+        */
 
-            /*
-            getting lists of Notes and making marker from each one of them and present the markers.
-            .
-            .
-            .
-            .
-            .
-            .
-            .
-             */
+        //getting lists of Notes and making marker from each one of them and present the markers.
+        //setting up listener
+        ///prpering list from all relevant notes from servers in a list
+        ArrayList<Note> notes = new ArrayList<>();
+        FirebaseDatabase database = FirebaseDatabase.getInstance("https://notemedb-milab-default-rtdb.firebaseio.com/");
+        DatabaseReference myRef = database.getReference("Notes/");
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                notes.clear();
+                for (DataSnapshot noteSnapshot : dataSnapshot.getChildren()){
+                    try{
+                        Note currentNote = noteSnapshot.getValue(Note.class);
+                        notes.add(currentNote);
+                    } catch (Exception e){ //might happen if we dont add proper notes to the DB.
+                        Log.e("DB to Markers", "something went wrong with converting DB to Notes");
+                    }
+                }
+                //adding markers from a list to the map.
+                for (Note note: notes) {
+                    Log.i("note list", note.getId());
+                    LatLng pos = new LatLng(note.getLat(),note.getLon());
+                    //-----------logic of whethere it is in range or not --------------- //
+                    Marker marker = mMap.addMarker(new MarkerOptions().position(pos).title(note.getHead()));
+                    marker.setTag(note.getId());
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+
+        mMap.setOnMarkerClickListener(this);
+
 
     }
 
@@ -247,19 +296,60 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public boolean onMarkerClick(Marker marker) {
         Log.i(marker.getTitle(), "clicked");    //debug
+        String noteid = "" + marker.getTag();
+
 
         if (marker.getId().equals(isItSecondMarkerClick)){
             Log.i("onMarkerClick", "equals ");    //debug
             isItSecondMarkerClick = "";     //after second click we want to go back to "zero", so 2 more clicks will be needed next time again even if they will click on the same marker again.
-            LatLng markerPosition = marker.getPosition();
-            //starting NoteActivity.
-            Intent intent = new Intent(MapActivity.this, NoteActivity.class);
-            /*
-            //giving the server the loction of the marker so e can trace it in the database.
-            intent.putExtra("Lat", markerPosition.latitude);
-            intent.putExtra("Lon", markerPosition.longitude);
-             */
-            startActivity(intent);
+            FirebaseDatabase database = FirebaseDatabase.getInstance("https://notemedb-milab-default-rtdb.firebaseio.com/");
+            Query myQuery = database.getReference("Notes/").orderByKey().equalTo(noteid);
+            myQuery.addListenerForSingleValueEvent(new ValueEventListener() { //this is one time listener only, so even if there will be changes it will not affect. in addition there cannot be any changes in a note because we don't give this option.
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    //starting NoteActivity.
+                    Note clickedNote = null;
+
+                    for (DataSnapshot noteSnapshot : dataSnapshot.getChildren()) {
+                        try {
+                            clickedNote = noteSnapshot.getValue(Note.class);
+
+                        } catch (Exception e) { //might happen if we dont add proper notes to the DB.
+                            Log.e("DB to Markers", "something went wrong with converting DB to Notes");
+                        }
+                    }
+
+
+                    //creating intent with the note information for the page.
+                    Intent intent = new Intent(MapActivity.this, NoteActivity.class);
+                   try{
+                       //giving the server the loction of the marker so e can trace it in the database.
+                       intent.putExtra("Lat", clickedNote.getLat());
+                       intent.putExtra("Lon", clickedNote.getLon());
+                       intent.putExtra("Id", clickedNote.getId());
+                       intent.putExtra("Head", clickedNote.getHead());
+                       intent.putExtra("Body", clickedNote.getBody());
+                       intent.putExtra("NumLikes", clickedNote.getNumLikes());
+                       //starting the page.
+
+
+                       startActivity(intent);
+                   } catch(Exception e){
+                       Log.e("On Marker Click", "try put extra to intent. ");
+
+                       Toast.makeText(MapActivity.this, "Sorry couldn't open this one", Toast.LENGTH_SHORT).show();
+                   }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+
+
 
 
             //tests debug
@@ -279,4 +369,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         return false;
     }
+
+
+
+
 }

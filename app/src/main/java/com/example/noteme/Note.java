@@ -7,13 +7,13 @@ import org.json.JSONObject;
 
 public class Note {
 
-    public boolean isError;
-    public String id;
-    public String head;
-    public String body;
-    public double lon;
-    public double lat;
-    public int numLikes;
+    private boolean isError;
+    private String id;
+    private String head;
+    private String body;
+    private double lon;
+    private double lat;
+    private int numLikes;
 
 
     public Note(boolean isError, String id, String head, String body, double lon, double lat, int numLikes) {
@@ -56,7 +56,7 @@ public class Note {
     }
 
 
-    // -------------- Getters for the firebase API -------- //
+    // -------------- Getters -------- //
 
     public String getId() {
         return id;
@@ -81,15 +81,22 @@ public class Note {
         return numLikes;
     }
 
-    public void setError(boolean error) {
-        isError = error;
+    public boolean getError(boolean error) {
+        return isError;
     }
 
-    // -------------- Setters for the firebase API -------- //
+
+
+
+    // -------------- Setters   -------- //
 
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public void setError(boolean error) {
+        isError = error;
     }
 
     public void setHead(String head) {

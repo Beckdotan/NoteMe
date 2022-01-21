@@ -3,6 +3,7 @@ package com.example.noteme;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +26,9 @@ public class NoteActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //cosmetics
+        getSupportActionBar().hide();
+
         setContentView(R.layout.activity_note);
         HeadLine = (TextView) findViewById(R.id.HeadLine);
         Likes = (TextView) findViewById(R.id.Likes);
@@ -33,10 +37,26 @@ public class NoteActivity extends AppCompatActivity {
         Body = (TextView) findViewById(R.id.Body);
         Id = (TextView) findViewById(R.id.Id);
 
+        //Getting the info from the intent and putting it in the text
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
 
+        if (extras != null) {
+            HeadLine.setText("" + extras.get("Head"));
+            Likes.setText(("Likes: " + extras.get("NumLikes")));
+            Lon.setText(("Lon: " + extras.get("Lon")));
+            Lat.setText(("Lat: " + extras.get("Lat")));
+            Body.setText("" + extras.get("Body"));
+            Id.setText("" + extras.get("Id"));
+        }
+
+    }
+
+
+        /*
         //-------------HARD CODE FOR TESTINGS -----------
         Note note = new Note(false, "kjh35gvk7756ll67", "Dotan Beck ","is the king!\ncannot believe that it works!!", 37.4244618058266, -122.08005726358829, 60);
-
+        */
 
         /*
        ----------DO NOT DELETE!!!! -----
@@ -54,11 +74,10 @@ public class NoteActivity extends AppCompatActivity {
         */
 
 
-        //cosmetics
-        getSupportActionBar().hide();
-        fetchNotePage(note);
 
 
+
+/*
     }
 
     public void fetchNote() {
@@ -87,12 +106,9 @@ public class NoteActivity extends AppCompatActivity {
 
 
     public void fetchNotePage (final Note note) {
-        HeadLine.setText(note.head);
-        Likes.setText((String) ("Likes: " + note.numLikes));
-        Lon.setText((String) ("Lon: " + note.lon) );
-        Lat.setText((String) ("Lat: "+ note.lat));
-        Body.setText(note.body);
-        Id.setText(note.id);
+
 
     }
+
+ */
 }

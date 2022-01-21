@@ -2,6 +2,7 @@ package com.example.noteme;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +14,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import org.json.JSONObject;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AddNoteActivity extends AppCompatActivity {
 
@@ -52,15 +56,25 @@ public class AddNoteActivity extends AppCompatActivity {
 
                 //---------sending JsonNote To Server------------//
                 String isSaved = saveNoteInDB(note, note.getId());
-                if (isSaved.equals("0")){
-                    createToast("Error - Wasn't Saved");
-                }else{
-                    createToast("We Got Your Note");
-                }
 
+                //Just for Fun, creating "Loading weel".
+                final ProgressDialog progressDialog = new ProgressDialog(AddNoteActivity.this);
+                progressDialog.setMessage("Fetching Stock...");
+                progressDialog.show();
+                new Timer().schedule(
+                        new TimerTask(){
 
+                            @Override
+                            public void run(){
+                                progressDialog.hide();
+                                if (isSaved.equals("0")){
+                                    createToast("Error - Wasn't Saved");
+                                }else {
+                                    createToast("We Got Your Note");
+                                }
+                            }
 
-
+                        }, 1500);
 
             }
         });
@@ -87,6 +101,9 @@ public class AddNoteActivity extends AppCompatActivity {
             //sending to DB
             myRef.setValue(note);
             Log.i("saveNoteInDB", "saved in DB! :)" );
+
+            /// !!!!!!!!!!!! ----- Can add the note id to the user notes list here ----- !!!!!!!!!
+
             return key;
         } catch (Error e){
             Log.e("saveNoteInDB", "didn't work" );
