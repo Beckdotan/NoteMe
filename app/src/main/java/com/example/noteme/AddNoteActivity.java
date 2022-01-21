@@ -3,8 +3,10 @@ package com.example.noteme;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +27,8 @@ public class AddNoteActivity extends AppCompatActivity {
     TextView headText;
     TextView bodyText;
     Button submitButton;
+
+    Handler handler = new Handler();
 
 
     @Override
@@ -60,38 +64,28 @@ public class AddNoteActivity extends AppCompatActivity {
                 String isSaved = saveNoteInDB(note);
 
 
-                if (isSaved.equals("0")) {
-                    createToast("Error - Wasn't Saved");
-                } else {
-                    createToast("We Got Your Note");
-                }
 
 
-                /*
-                //Just for Fun, creating "Loading weel".
+
+             //Just for fun - proccesing dialog
                 final ProgressDialog progressDialog = new ProgressDialog(AddNoteActivity.this);
-                progressDialog.setMessage("Fetching Stock...");
+                progressDialog.setMessage("Publishing your note...");
                 progressDialog.show();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.hide();
+                        if (isSaved.equals("0")) {
+                            createToast("Error - Wasn't Saved");
+                            //deleting the published note info
 
-
-
-                progressDialog.hide();
-                new Timer().schedule(
-                        new TimerTask(){
-                            @Override
-                            public void run(){
-
-                                if (isSaved.equals("0")){
-                                    createToast("Error - Wasn't Saved");
-                                }else {
-                                    createToast("We Got Your Note");
-                                }
-                            }
-
-                        }, 2000);
-                */
-
-
+                        } else {
+                            createToast("We Got Your Note");
+                            headText.setText("");
+                            bodyText.setText("");
+                        }
+                    }
+                }, 1000);
             }
         });
 
