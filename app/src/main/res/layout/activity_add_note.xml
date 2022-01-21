@@ -29,11 +29,11 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/healingLayout"
         style="@style/Widget.Design.TextInputLayout"
-        android:layout_width="330dp"
-        android:layout_height="47dp"
-        android:layout_marginTop="104dp"
+        android:layout_width="372dp"
+        android:layout_height="77dp"
+        android:layout_marginTop="88dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintHorizontal_bias="0.41"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -41,7 +41,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/headlineText"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="61dp"
             android:hint="Headline"
             android:textColorHighlight="#090F87"
             tools:ignore="TouchTargetSizeCheck" />
