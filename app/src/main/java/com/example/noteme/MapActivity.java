@@ -7,12 +7,11 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -38,10 +37,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.lang.reflect.Array;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.List;
+import java.util.Locale;
 
 
 public class MapActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener{
@@ -55,10 +54,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     private static final int DEFAULT_ZOOM = 15;
     private final LatLng mDeaultlocation = new LatLng(-34, 151);  //random location - doesnt metter where, just to start things running
     static Location mLastKnownLocation;
+    static Location mCurrentLocation;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
     private String isItSecondMarkerClick = "";
-    public int defUserRadius = 50;
+    public int defUserRadius = 170;
 
 
     // test
@@ -66,6 +66,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
 
         binding = ActivityMapBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -77,17 +79,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
         mfusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
-        addNoteButton = (Button) findViewById(R.id.addnotebutton);
-
-        /*
-        calling to get all the pointer will be here
-        should add it to the documentation
-        .
-        .
-        .
-        .
-        .
-         */
+        //getDeviceLocation();
 
     }
 
@@ -96,7 +88,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        addNoteButton = (Button) findViewById(R.id.addnotebutton);
 
         // Starting the map to fixed location and zoom that will be changed in the  UpdateLocationUI function soon, but its needed for the right loading.
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDeaultlocation, DEFAULT_ZOOM));
@@ -105,9 +97,11 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
             mLocationPermissionGranted = true;
             mMap.setMyLocationEnabled(true);
         }
-
-        updateLocationUI(); //updating the screen location and zoom to the  mLastKnownLocation. - important that it will come before getting the device location in the first time becouse i askes for permissions as well.
         getDeviceLocation(); //getting Device Current location if all permissions were given and saves it in  mLastKnownLocation, otherwise asking for permissions.
+        updateLocationUI();//updating the screen location and zoom to the  mLastKnownLocation. - important that it will come before getting the device location in the first time becouse i askes for permissions as well.
+
+        mMap.setOnMarkerClickListener(this);
+
 
 
         //Click listener for Add note
@@ -120,6 +114,7 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             }
         });
+
 
         //hardcoded marker for tests
         /*
@@ -143,18 +138,31 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                     try{
                         Note currentNote = noteSnapshot.getValue(Note.class);
                         notes.add(currentNote);
+                        //Log.e("onDataChange","added" + currentNote.getId() );
                     } catch (Exception e){ //might happen if we dont add proper notes to the DB.
-                        Log.e("DB to Markers", "something went wrong with converting DB to Notes");
+                       // Log.e("DB to Markers", "something went wrong with converting DB to Notes");
                     }
                 }
                 //adding markers from a list to the map.
-                for (Note note: notes) {
-                    Log.i("note list", note.getId());
-                    LatLng pos = new LatLng(note.getLat(),note.getLon());
-                    //-----------logic of whethere it is in range or not --------------- //
-                    Marker marker = mMap.addMarker(new MarkerOptions().position(pos).title(note.getHead()));
-                    marker.setTag(note.getId());
+                try{
+                    for (Note note: notes) {
+                        Log.i("note list", note.getId());
+                        LatLng pos = new LatLng(note.getLat(),note.getLon());
+                        //-----------logic of whethere it is in range or not --------------- //
+                        if (isInRange(pos,defUserRadius)){
+                            Log.e("in range", "with note" + note.getId());
+                            Marker marker = mMap.addMarker(new MarkerOptions().position(pos).title(note.getHead()));
+                            marker.setTag(note.getId());
+                        }
+                    }
+                } catch (Exception e){
+                    Log.e("range", "LastLocation = null", e );
                 }
+                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! change the defUserRadius after implementing users!
+
+
+
+
 
 
             }
@@ -208,16 +216,28 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
     //getting last known location and moving the map to it.
     private void getDeviceLocation() {
 
-        Log.i("GET DIVICE LOCATION", "In");  //debug
+
         try {
-            Log.i("GET DIVICE LOCATION", "In TRY");   //debug
-            if (mLocationPermissionGranted) {
-                Log.i("GET DIVICE LOCATION", "IN IF");    //debug
+
+            if (ActivityCompat.checkSelfPermission(MapActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) { //if permitted
                 Task locationResult = mfusedLocationProviderClient.getLastLocation();
-                Log.i("GET DIVICE LOCATION", "made task");    //debug
-                locationResult.addOnCompleteListener(this, new OnCompleteListener() {
+                locationResult.addOnCompleteListener(MapActivity.this, new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
+                        try{
+                            mLastKnownLocation = (Location) task.getResult();
+                            Log.i("my location: ", mLastKnownLocation.toString());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(
+                                    new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude())));
+
+                        }catch(Exception e){
+                            Log.e("Null Location", "Exception", e );
+                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDeaultlocation,DEFAULT_ZOOM));
+                            mMap.getUiSettings().setMyLocationButtonEnabled(true);
+                        }
+
+
+                        /*
                         if (task.isSuccessful()) { //then - set the cameras positions to the current location of device.
 
                             //tests debug
@@ -230,26 +250,32 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                             //----end of tests-------//
 
                             mLastKnownLocation = (Location) task.getResult();
+                            Log.e("mlasknowlocatiobn", ""+mLastKnownLocation);
 
-                            //tests
-                            if (mLastKnownLocation == null){
-                                Log.i("On Complete", "last location = null");
-                            }else {
-                                Log.i("On Complete", "lastlocation not null");
+                            try{
+                                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                        new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
+                            }catch (Exception e){
+                                Log.e("MyLocation", "last location = null");
                             }
-                            //------end of tests--------//
 
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+
 
                         } else { //if it didnt wored, print the error to log.e and nove to default location.
                             Log.d("nullLocation", "current location is null, Using Defult");
                             Log.e("nullLocation", "Exception %s", task.getException());
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDeaultlocation, DEFAULT_ZOOM));
                             mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                            requestLocationPermission();
                         }
+
+                         */
                     }
                 });
+
+            }else{
+                requestLocationPermission();
             }
 
         } catch (SecurityException e) {
@@ -277,9 +303,8 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
             }else{ //if there is still not permission:
                 Log.i("UPDATE MY LOCATION", "In Try - ELSE ");
-                mMap.setMyLocationEnabled(false);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mLastKnownLocation = null;
+                mMap.setMyLocationEnabled(true);
+                mMap.getUiSettings().setMyLocationButtonEnabled(true);
                 requestLocationPermission();
             }
 
@@ -331,8 +356,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
                        intent.putExtra("Body", clickedNote.getBody());
                        intent.putExtra("NumLikes", clickedNote.getNumLikes());
                        //starting the page.
-
-
                        startActivity(intent);
                    } catch(Exception e){
                        Log.e("On Marker Click", "try put extra to intent. ");
@@ -347,10 +370,6 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
 
                 }
             });
-
-
-
-
 
             //tests debug
             Log.i("onMarkerClick marker", marker.getId());
@@ -368,6 +387,48 @@ public class MapActivity extends FragmentActivity implements OnMapReadyCallback,
         }
 
         return false;
+    }
+
+    private boolean isInRange(LatLng pos,int radius){
+        if (mLastKnownLocation == null){
+            Log.e("TAG", "mLastKnownLocation == null");
+        }
+        double lat1 = mLastKnownLocation.getLatitude();
+        Log.i("distance", "x1 = " + lat1);
+        double lon1 = mLastKnownLocation.getLongitude();
+        Log.i("distance", "y1 = " + lon1);
+        double lat2 = pos.latitude;
+        Log.i("distance", "x2 = " + lat1);
+        double lon2 = pos.longitude;
+        Log.i("distance", "y2 = " + lon2);
+        double distance = calcDistance(lat1,lon1,lat2,lon2)*1000;
+        Log.i("distance", "dis = " + distance);
+
+        if ((radius*radius) >= (distance*distance)){
+            return true;
+        }
+        return false;
+    }
+
+    private double calcDistance(double lat1, double lon1, double lat2, double lon2) {
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1))
+                * Math.sin(deg2rad(lat2))
+                + Math.cos(deg2rad(lat1))
+                * Math.cos(deg2rad(lat2))
+                * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515;
+        return (dist);
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
     }
 
 

@@ -39,21 +39,6 @@ public class Note {
     public  Note() {
     }
 
-  /*
-    //getting Json and return extract all notes from it.
-    public void saveNoteInDB (String ref){
-        // Write a message to the database
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("ref");
-        myRef.setValue("Hello, World!");
-    }
-   */
-
-    //getting Note and creating JSONObject.
-    public JSONObject NoteToJSON (){
-        JSONObject json = new JSONObject();
-        return json;
-    }
 
 
     // -------------- Getters -------- //

@@ -7,8 +7,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class NoteActivity extends AppCompatActivity {
 
@@ -20,6 +24,10 @@ public class NoteActivity extends AppCompatActivity {
     TextView Id;
     static double givenLat;
     static double givenLon;
+    Button likeButton;
+    String currentId;
+    int currentLikes;
+
 
 
 
@@ -29,7 +37,9 @@ public class NoteActivity extends AppCompatActivity {
         //cosmetics
         getSupportActionBar().hide();
 
+
         setContentView(R.layout.activity_note);
+        likeButton = (Button) findViewById(R.id.likeButton);
         HeadLine = (TextView) findViewById(R.id.HeadLine);
         Likes = (TextView) findViewById(R.id.Likes);
         Lon = (TextView) findViewById(R.id.Lon);
@@ -40,6 +50,8 @@ public class NoteActivity extends AppCompatActivity {
         //Getting the info from the intent and putting it in the text
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
+        currentId = "" + extras.get("Id");
+        currentLikes =  Integer.parseInt("" + extras.get("NumLikes"));
 
         if (extras != null) {
             HeadLine.setText("" + extras.get("Head"));
@@ -48,67 +60,39 @@ public class NoteActivity extends AppCompatActivity {
             Lat.setText(("Lat: " + extras.get("Lat")));
             Body.setText("" + extras.get("Body"));
             Id.setText("" + extras.get("Id"));
+
+
         }
 
-    }
-
-
-        /*
-        //-------------HARD CODE FOR TESTINGS -----------
-        Note note = new Note(false, "kjh35gvk7756ll67", "Dotan Beck ","is the king!\ncannot believe that it works!!", 37.4244618058266, -122.08005726358829, 60);
-        */
-
-        /*
-       ----------DO NOT DELETE!!!! -----
-       //That is the right one when the server will be ready.
-
-        //extracting the inforamtion got from other activity about the location that got pressed.
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            givenLat = Double.parseDouble(extras.getString("Lat"));
-            givenLon = Double.parseDouble(extras.getString("Lon"));
-
-        }
-        //fetch note from server and presenting it in the UI.
-        fetchNote();
-        */
-
-
-
-
-
-/*
-    }
-
-    public void fetchNote() {
-        final SingleNoteFetcher fetcher = new SingleNoteFetcher(this);
-
-        //Loading Box
-        final ProgressDialog progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Fetching Stock...");
-        progressDialog.show();
-
-        fetcher.dispatchRequest(new SingleNoteFetcher.SingleNoteResponseListener() {
+        likeButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onResponse(SingleNoteFetcher.SingleNoteResponse response) {
-                progressDialog.hide();
-                if (response.isError) {
-                    Log.i("main", "in response.is_err");
-                    //Toast.makeText(this, "Error while fetching Note", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                Note note = new Note(response.isError, response.id, response.head, response.body, response.lon, response.lat, response.numLikes);
-                fetchNotePage(note);
+            public void onClick(View v) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference myRef = database.getReference("Notes/" + currentId + "/numLikes");
+                //the next 3 line me will be deleted after implementing the logic below which include the users.
+                currentLikes += 1;
+                myRef.setValue(currentLikes);
+                Likes.setText(("Likes: " + currentLikes));
+
+                /*// !!!!!!!!!!!!!!!!!!!!!  should make logic here so that if this note is in the user list,
+                // he cannot like it twice (and maybe even deletes his like if he press in the second time !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //and put that 2 lines in case we want to add..
+
+                if currentId is not on his list run then:
+                //adding the like to server and adding is in view.
+                currentLikes += 1;
+                myRef.setValue(currentLikes);
+                Likes.setText(("Likes: " + currentLikes));
+
+                //------
+                else if currentId is in his liked list then:
+                currentLikes -= 1;
+                myRef.setValue(currentLikes);
+                Likes.setText(("Likes: " + currentLikes));
+                 */
 
             }
         });
-    }
-
-
-    public void fetchNotePage (final Note note) {
-
 
     }
-
- */
 }

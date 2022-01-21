@@ -3,6 +3,7 @@ package com.example.noteme;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -54,19 +56,31 @@ public class AddNoteActivity extends AppCompatActivity {
                 //creating note
                 Note note = new Note(false, head, body, lon, lat, likes);
 
-                //---------sending JsonNote To Server------------//
-                String isSaved = saveNoteInDB(note, note.getId());
+                //---------sending Note To Server------------//
+                String isSaved = saveNoteInDB(note);
 
+
+                if (isSaved.equals("0")) {
+                    createToast("Error - Wasn't Saved");
+                } else {
+                    createToast("We Got Your Note");
+                }
+
+
+                /*
                 //Just for Fun, creating "Loading weel".
                 final ProgressDialog progressDialog = new ProgressDialog(AddNoteActivity.this);
                 progressDialog.setMessage("Fetching Stock...");
                 progressDialog.show();
+
+
+
+                progressDialog.hide();
                 new Timer().schedule(
                         new TimerTask(){
-
                             @Override
                             public void run(){
-                                progressDialog.hide();
+
                                 if (isSaved.equals("0")){
                                     createToast("Error - Wasn't Saved");
                                 }else {
@@ -74,7 +88,9 @@ public class AddNoteActivity extends AppCompatActivity {
                                 }
                             }
 
-                        }, 1500);
+                        }, 2000);
+                */
+
 
             }
         });
@@ -82,38 +98,35 @@ public class AddNoteActivity extends AppCompatActivity {
 
     }
 
-    private void createToast(String str){
+    private void createToast(String str) {
         Toast.makeText(this, str, Toast.LENGTH_LONG).show();
     }
 
     //sending the Note to DB.
     //if works - return the automatic key was given and send toast to user
     //else return "0" as didnt happen.  and send toast to user.
-    public String saveNoteInDB (Note note, String ref) {
+    public String saveNoteInDB(Note note) {
         // Write a message to the database
-        try{
+        try {
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference myRef = database.getReference("Notes/").push();
             //getting the new key from DB
-            String key =  myRef.getKey();
+            String key = myRef.getKey();
             //saving it for id in Note
             note.setId(key);
             //sending to DB
             myRef.setValue(note);
-            Log.i("saveNoteInDB", "saved in DB! :)" );
+            Log.i("saveNoteInDB", "saved in DB! :)");
 
             /// !!!!!!!!!!!! ----- Can add the note id to the user notes list here ----- !!!!!!!!!
 
             return key;
-        } catch (Error e){
-            Log.e("saveNoteInDB", "didn't work" );
+        } catch (Error e) {
+            Log.e("saveNoteInDB", "didn't work");
             return "0";
         }
 
 
     }
-
-
-
 
 }
